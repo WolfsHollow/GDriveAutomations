@@ -1,0 +1,166 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Schedule Functions')
+      .addItem('Delete Event', 'deleteEvent')
+      .addItem('Fix Row Colors', 'fixRows')
+      .addItem('Add AA Event', 'addSenior')
+      .addItem('Add Group X (Free)','addGroupX')
+      .addItem('Add Group Training (Paid)','addGroupTraining')
+      .addItem('Add Camp Event','addCamp')
+      .addItem('Add Meeting','addMeeting')
+      .addItem('Add Reservation','addReservation')
+      .addToUi();
+}
+
+function deleteEvent() {
+  
+  //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet(); 
+  
+  //Get selected event
+  var selection = SpreadsheetApp.getSelection(); 
+  var currentCell = selection.getActiveRange();
+  //Unmerge, delete fill/color, redo borders
+  currentCell.clearFormat();
+  currentCell.breakApart();
+  currentCell.setBorder(true, true, true, true, true, true);
+  currentCell.clearContent(); 
+  
+}
+
+function fixRows(){
+ //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  var column = 2;
+  var colour = null;
+
+  for (row=5; row<=38; row=row+2){
+    for (column=2; column<9; column++){
+      colour = activeSheet.getRange(row,column).getBackground();
+      Logger.log(colour)
+      if (colour == '#ffffff'){
+        activeSheet.getRange(row,column).setBackground('#f3f3f3');
+      }
+    }        
+  }  
+}
+
+function addSenior(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#8f6c95'); //purple
+  currentCell.setFontColor('white');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
+function addGroupX(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#58a618'); //green
+  currentCell.setFontColor('white');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
+function addGroupTraining(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#ffb612');//yellow
+  currentCell.setFontColor('black');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
+function addCamp(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#EA4335'); //red
+  currentCell.setFontColor('white');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
+function addMeeting(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#ffb612'); //dark yellow 1
+  currentCell.setFontColor('black');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
+function addReservation(){
+   //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+
+  //Merge, set text color
+  var selection = SpreadsheetApp.getSelection();
+  var currentCell = selection.getActiveRange();
+
+  currentCell.merge();
+  currentCell.setBackground('#6495ED'); //cornflower blue
+  currentCell.setFontColor('white');
+  currentCell.setVerticalAlignment('middle');
+  currentCell.setHorizontalAlignment('center');
+  currentCell.setFontWeight("bold");
+  currentCell.setWrap(true);
+}
+
