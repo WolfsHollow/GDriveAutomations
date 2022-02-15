@@ -1,0 +1,133 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Create Spreadsheet')
+      .addItem('Make the Spreadsheet', 'firstPlusLast')
+      .addToUi();
+}
+
+function firstPlusLast() {
+  
+  //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var startNumberArray = [];
+  var endNumberArray = [];
+  var lastRow = activeSheet.getLastRow()+1; 
+  var lastColumn = 0;
+  var maxPeople = 0
+  var addedRows = 0;
+  var newAddedRows = 0;
+  var timeBlocks = [];
+  var facility = activeSheet.getRange(1,1).getValue();
+  var tabTitle = facility;
+
+
+  // Find last column for names
+  for (var i=3; i<20 ; i++){
+    if (activeSheet.getRange(4,i).getValue() == "Account Expected Balance"){
+      lastColumn = i-2;
+      maxPeople = activeSheet.getRange(3,lastColumn+5).setNumberFormat("@").getValue();
+      var numCut = maxPeople.indexOf("/");
+      Logger.log(maxPeople);
+      maxPeople = maxPeople.slice(numCut+1);
+      Logger.log(maxPeople);
+      maxPeople = Number(maxPeople);
+    }
+  }
+ 
+  
+  // Find start/end points for all names
+  for (var i=4; i < lastRow; i++){
+    
+    // Put all starting rows into an array
+    if (activeSheet.getRange(i,1).getValue() == "First name"){
+      startNumberArray.push(i+1);
+      
+      // Put all the time blocks into an array, formatting it to "00:00 pm - 00:00 pm"
+      var dateTime = activeSheet.getRange(i-1,1).getValue();
+      var date = dateTime;
+      var times = dateTime;
+      var cutoff = dateTime.indexOf("from");
+      var date = date.slice(0,cutoff-1);
+      var times = times.slice(cutoff+5);
+      times = times.replace("to", "-");      
+      timeBlocks.push(times);
+    }
+    
+    // Put all ending rows into an array
+    if (activeSheet.getRange(i,1).getValue() =="" && activeSheet.getRange(i+1,1).getValue() == ""){
+      endNumberArray.push(i);
+    }
+  }
+  
+  var numberTimeBlocks = timeBlocks.length;
+  endNumberArray.push(lastRow); //add last endpoint
+  
+  
+  var blocks = startNumberArray.length; //get number of times to iterate next section
+        
+  activeSheet.insertColumnBefore(1); // Make column for full names
+  
+  // Add formula to put first and last name together in
+  activeSheet.getRange(3,1).setFormula('=Concatenate(B3," ",C3)');
+  activeSheet.getRange(3,1).copyTo(activeSheet.getRange(3,1,lastRow-2,1));  
+    
+  
+  // new sheet, center text, and refresh arrays
+  var newSheet = ss.insertSheet(tabTitle);
+  newSheet.getRange("A1:P400").setHorizontalAlignment("center").setVerticalAlignment("");
+  startNumberArray = [];
+  endNumberArray = [];
+  lastRow = activeSheet.getLastRow()+1; 
+  
+  
+  //Set title/which area and merge cells
+  newSheet.getRange(1,1).setValue(facility);
+  newSheet.getRange(1,1,1,2).mergeAcross().setHorizontalAlignment("left");
+  
+  
+  //put time blocks down
+  for (var i=0; i<numberTimeBlocks; i++){
+    newSheet.getRange(2,i+1).setValue(timeBlocks[i]);
+  }  
+  
+  //refresh variables for start/end because lazy
+  for (var i=4; i < lastRow; i++){
+    
+    // Put all starting rows into an array
+    if (activeSheet.getRange(i,1).getValue() == "First name Last name"){
+      startNumberArray.push(i+1);       
+    }
+    
+    // Put all ending rows into an array
+    if (activeSheet.getRange(i,2).getValue() =="" && activeSheet.getRange(i+1,2).getValue() == ""){
+      endNumberArray.push(i);
+    }
+  }
+
+  // Copy people from active sheet to new sheet in the right time blocks  
+  for (var i=0; i < numberTimeBlocks; i++){
+    var numRows =  endNumberArray[i] - startNumberArray[i];
+    var range = activeSheet.getRange(startNumberArray[i],1,numRows);
+    range.copyValuesToRange(newSheet,i+1,i+1,3,3+numRows);
+    var borderRange = newSheet.getRange(2,i+1,maxPeople+1,1);
+    borderRange.setBorder(true, true, true, true, false, false);
+    newSheet.setColumnWidth(i+1, 160);    
+    }  
+  
+  //setRowHeights(startRow, numRows, height)
+  newSheet.getRange(1,numberTimeBlocks-1).setValue(date);
+  newSheet.getRange(1,numberTimeBlocks-1,1,2).mergeAcross();
+  newSheet.getRange("1:2").setFontWeight("bold");
+  newSheet.getRange("1:1").setFontSize(14);
+  newSheet.getRange("2:2").setFontSize(12);
+  newSheet.getRange(2,1,1,numberTimeBlocks).setBackground("#eaeaea").setBorder(true,true,true,true,true,false)
+  newSheet.setRowHeights(1, maxPeople+2, 30)
+  
+  var sheetName = activeSheet.getSheetName();
+  ss.deleteSheet(activeSheet);
+  var finalSheet = ss.insertSheet('Copy Paste Here',0);
+  ss.setActiveSheet(ss.getSheets()[1]);
+  
+}
