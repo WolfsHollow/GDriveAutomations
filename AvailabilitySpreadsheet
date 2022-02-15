@@ -1,0 +1,548 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Create Spreadsheet')
+      .addItem('Make the Spreadsheet', 'availability')
+      .addToUi();
+}
+
+function availability() {
+  
+  //Initialize Variables
+  var app = SpreadsheetApp;  
+  var ss = app.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var lastRow = activeSheet.getLastRow()+1; 
+  var cellData = '';
+  var activityName = '';
+  var participants = 0;
+  
+  var gamesRoom = [];
+  var gamesTimes = [];
+  var gamesParticipants = [];
+  var gamesDict = [{},{},{},{},{},{},{}];
+
+  var fitness = [];
+  var fitnessTimes = [];
+  var fitnessParticipants = [];
+  var gamesDict = [{},{},{},{},{},{},{}];
+
+  var pool = [];
+  var poolTimes = [];
+  var poolParticipants = [];
+  var gamesDict = [{},{},{},{},{},{},{}];
+
+  var basketball1 = [];
+  var basketball1Times = [];
+  var basketball1Participants = [];
+  var basketball1Dict = [{},{},{},{},{},{},{}];
+
+  var basketball2 = [];
+  var basketball2Times = [];
+  var basketball2Participants = [];
+  var basketball2Dict = [{},{},{},{},{},{},{}];
+  
+  var basketball3 = [];
+  var basketball3Times = [];
+  var basketball3Participants = [];
+  var basketball3Dict = [{},{},{},{},{},{},{}];
+  
+  var basketball4 = [];
+  var basketball4Times = [];
+  var basketball4Participants = [];
+  var basketball4Dict = [{},{},{},{},{},{},{}];
+
+  var pickleball1 = [];
+  var pickleball1Times = [];
+  var pickleball1Participants = [];
+  var pickleball1Dict = [{},{},{},{},{},{},{}];
+  
+  var pickleball2 = [];
+  var pickleball2Times = [];
+  var pickleball2Participants = [];
+  var pickleball2Dict = [{},{},{},{},{},{},{}];
+  
+  var pickleball3 = [];
+  var pickleball3Times = [];
+  var pickleball3Participants = [];
+  var pickleball3Dict = [{},{},{},{},{},{},{}];
+
+  var volleyball = [];
+  var volleyballTimes = [];
+  var volleyballParticipants = [];
+  var volleyballDict = [{},{},{},{},{},{},{}];
+
+  var badminton1 = [];
+  var badminton1Times = [];
+  var badminton1Participants = [];
+  var badminton1Dict = [{},{},{},{},{},{},{}];  
+  
+  var badminton2 = [];
+  var badminton2Times = [];
+  var badminton2Participants = [];
+  var badminton2Dict = [{},{},{},{},{},{},{}];
+
+  var today = new Date();
+  
+  var todayPlus1 = new Date(today);
+  var todayPlus2 = new Date(today);
+  var todayPlus3 = new Date(today);
+  var todayPlus4 = new Date(today);
+  var todayPlus5 = new Date(today);
+  var todayPlus6 = new Date(today);
+
+  todayPlus1.setDate(todayPlus1.getDate() + 1);
+  todayPlus2.setDate(todayPlus2.getDate() + 2);
+  todayPlus3.setDate(todayPlus3.getDate() + 3);
+  todayPlus4.setDate(todayPlus4.getDate() + 4);
+  todayPlus5.setDate(todayPlus5.getDate() + 5);
+  todayPlus6.setDate(todayPlus6.getDate() + 6);
+  today = today.toDateString();
+  todayPlus1 = todayPlus1.toDateString();
+  todayPlus2 = todayPlus2.toDateString();
+  todayPlus3 = todayPlus3.toDateString();
+  todayPlus4 = todayPlus4.toDateString();
+  todayPlus5 = todayPlus5.toDateString();
+  todayPlus6 = todayPlus6.toDateString();
+
+  for (i = 1; i < lastRow; i++){
+    cellData = activeSheet.getRange(i,1).getValue();
+    if (cellData.includes('AM') || cellData.includes ('PM')){
+      var timeSlot = cellData;
+      var cellData1 = activeSheet.getRange(i+1,1).getValue();
+      var cellData2 = activeSheet.getRange(i+3,1).getValue();
+      
+      if (cellData1.includes('Thrive')&&cellData1.includes('Thrive Pool')== false){
+        cellData1 = activeSheet.getRange(i+2,1).getValue();
+        cellData2 = activeSheet.getRange(i+3,1).getValue();
+      }
+      var j = 0
+      while (cellData2.includes('Participants') == false){
+        cellData2 = activeSheet.getRange(i+j,1).getValue();
+        j++;
+      }
+      
+      activityName = cellData1;
+      participants = cellData2;
+      var cutoff = timeSlot.indexOf('-');
+      timeSlot = timeSlot.slice(0,cutoff-1);
+      var cutoff = participants.indexOf('/')
+      participants = participants.slice(0, cutoff-1);
+      participants = parseInt(participants);
+      //Logger.log(timeSlot);
+      //Logger.log(participants);
+
+      //Logger.log("Activity: " + activityName);
+      //Logger.log("Participants: " + participants);
+
+      if (activityName.includes('Games Room')){
+        gamesRoom.push(timeSlot + ',' + participants);
+      }
+      else if (activityName.includes('Fitness Floor')){
+        fitness.push(timeSlot + ',' + participants);
+      }
+      else if (activityName.includes('Thrive Pool')){
+        pool.push(timeSlot + ',' + participants);
+      }
+      else if (activityName.includes('Basketball Goal')){
+        if (activityName.includes('#1')){
+          basketball1.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#2')){
+          basketball2.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#3')){
+          basketball3.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#4')){
+          basketball4.push(timeSlot + ',' + participants);
+        }        
+      }
+      else if (activityName.includes('Pickleball Court')){
+        if (activityName.includes('#1')){
+          pickleball1.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#2')){
+          pickleball2.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#3')){
+          pickleball3.push(timeSlot + ',' + participants);
+        }
+        
+      }
+      else if (activityName.includes('Badminton Court')){
+        if (activityName.includes('#1')){
+          badminton1.push(timeSlot + ',' + participants);
+        }
+        else if (activityName.includes('#2')){
+          badminton2.push(timeSlot + ',' + participants);
+        }
+      }
+      else if (activityName.includes('Volleyball') && activityName.includes('Chair') == false){
+        volleyball.push(timeSlot + ',' + participants);
+      }     
+    }
+
+  }
+
+  Logger.log("Games room " + gamesRoom);
+  Logger.log("Fitness " + fitness);
+  Logger.log("Pool " + pool);
+  Logger.log("Basketball1 " + basketball1);
+  Logger.log("Basketball2 " + basketball2);
+  Logger.log("Basketball3 " + basketball3);
+  Logger.log("Basketball4 " + basketball4);
+  Logger.log("Pickleball1 " + pickleball1);
+  Logger.log("Pickleball2 " + pickleball2);
+  Logger.log("Pickleball3 " + pickleball3);
+  Logger.log("Badminton1 " + badminton1);
+  Logger.log("Badminton2 " + badminton2);
+  Logger.log("Volleyball " + volleyball);
+  
+
+  for (i = 0; i < fitness.length; i++){    
+    cutoff = fitness[i].indexOf(',');
+    var currentParticipants = fitness[i].slice(cutoff+1);
+    var currentTime = fitness[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    fitnessParticipants.push(currentParticipants);
+    fitnessTimes.push(currentTime)   
+  }
+  
+  for (i = 0; i < pool.length; i++){    
+    cutoff = pool[i].indexOf(',');
+    var currentParticipants = pool[i].slice(cutoff+1);
+    var currentTime = pool[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    poolParticipants.push(currentParticipants);
+    poolTimes.push(currentTime)   
+  }
+  
+  for (i = 0; i < gamesRoom.length; i++){    
+    cutoff = gamesRoom[i].indexOf(',');
+    var currentParticipants = gamesRoom[i].slice(cutoff+1);
+    var currentTime = gamesRoom[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    gamesParticipants.push(currentParticipants);
+    gamesTimes.push(currentTime)   
+  }
+  
+  for (i = 0; i < basketball1.length; i++){    
+    cutoff = basketball1[i].indexOf(',');
+    var currentParticipants = basketball1[i].slice(cutoff+1);
+    var currentTime = basketball1[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    basketball1Participants.push(currentParticipants);
+    basketball1Times.push(currentTime)   
+  }
+
+  for (i = 0; i < basketball2.length; i++){    
+    cutoff = basketball2[i].indexOf(',');
+    var currentParticipants = basketball2[i].slice(cutoff+1);
+    var currentTime = basketball2[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    basketball2Participants.push(currentParticipants);
+    basketball2Times.push(currentTime)   
+  }
+
+  for (i = 0; i < basketball3.length; i++){    
+    cutoff = basketball3[i].indexOf(',');
+    var currentParticipants = basketball3[i].slice(cutoff+1);
+    var currentTime = basketball3[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    basketball3Participants.push(currentParticipants);
+    basketball3Times.push(currentTime)   
+  }
+
+  for (i = 0; i < basketball4.length; i++){    
+    cutoff = basketball4[i].indexOf(',');
+    var currentParticipants = basketball4[i].slice(cutoff+1);
+    var currentTime = basketball4[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    basketball4Participants.push(currentParticipants);
+    basketball4Times.push(currentTime)   
+  }  
+
+  for (i = 0; i < pickleball1.length; i++){    
+    cutoff = pickleball1[i].indexOf(',');
+    var currentParticipants = pickleball1[i].slice(cutoff+1);
+    var currentTime = pickleball1[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    pickleball1Participants.push(currentParticipants);
+    pickleball1Times.push(currentTime)   
+  }  
+  
+  for (i = 0; i < pickleball2.length; i++){    
+    cutoff = pickleball2[i].indexOf(',');
+    var currentParticipants = pickleball2[i].slice(cutoff+1);
+    var currentTime = pickleball2[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    pickleball2Participants.push(currentParticipants);
+    pickleball2Times.push(currentTime)   
+  }
+
+  for (i = 0; i < pickleball3.length; i++){    
+    cutoff = pickleball3[i].indexOf(',');
+    var currentParticipants = pickleball3[i].slice(cutoff+1);
+    var currentTime = pickleball3[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    pickleball3Participants.push(currentParticipants);
+    pickleball3Times.push(currentTime)   
+  }
+
+  for (i = 0; i < badminton1.length; i++){    
+    cutoff = badminton1[i].indexOf(',');
+    var currentParticipants = badminton1[i].slice(cutoff+1);
+    var currentTime = badminton1[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    badminton1Participants.push(currentParticipants);
+    badminton1Times.push(currentTime)   
+  } 
+
+  for (i = 0; i < badminton2.length; i++){    
+    cutoff = badminton2[i].indexOf(',');
+    var currentParticipants = badminton2[i].slice(cutoff+1);
+    var currentTime = badminton2[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    badminton2Participants.push(currentParticipants);
+    badminton2Times.push(currentTime)   
+  }       
+
+  for (i = 0; i < volleyball.length; i++){    
+    cutoff = volleyball[i].indexOf(',');
+    var currentParticipants = volleyball[i].slice(cutoff+1);
+    var currentTime = volleyball[i].slice(0,cutoff);
+
+    //Logger.log(currentParticipants);
+    //Logger.log(currentTime);
+    volleyballParticipants.push(currentParticipants);
+    volleyballTimes.push(currentTime)   
+  }  
+
+Logger.log(gamesTimes);
+Logger.log(gamesParticipants);
+
+Logger.log(fitnessTimes);
+Logger.log(fitnessParticipants);
+
+Logger.log(poolTimes);
+Logger.log(poolParticipants);
+
+Logger.log(basketball1Times);
+Logger.log(basketball1Participants);
+Logger.log(basketball2Times);
+Logger.log(basketball2Participants);
+Logger.log(basketball3Times);
+Logger.log(basketball3Participants);
+Logger.log(basketball4Times);
+Logger.log(basketball4Participants);
+
+Logger.log(badminton1Times);
+Logger.log(badminton1Participants);
+Logger.log(badminton2Times);
+Logger.log(badminton2Participants);
+
+Logger.log(pickleball1Times);
+Logger.log(pickleball1Participants);
+Logger.log(pickleball2Times);
+Logger.log(pickleball2Participants);
+Logger.log(pickleball3Times);
+Logger.log(pickleball3Participants);
+
+Logger.log(volleyballTimes);
+Logger.log(volleyballParticipants);
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////New Sheet////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+   
+  // new sheet, center text, and refresh arrays
+   var oldSheet = ss.getSheetByName('Template');
+   var ss = app.getActiveSpreadsheet();
+   var newSheet = oldSheet.copyTo(ss).setName(today);
+
+  // make new sheet and set active sheet
+   ss.getSheets()[ss.getSheets().length-1].setName(today).activate();
+   ss.moveActiveSheet(1);
+   
+   var lastRow = newSheet.getLastRow();
+  
+  for (i=1; i<lastRow+1; i++){
+    cellData = newSheet.getRange(i,1).getValue();
+    if (cellData.includes('Fitness')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<fitnessTimes.length+2; j++){
+        newSheet.getRange(i,j).setValue(fitnessTimes[j-2]);
+        newSheet.getRange(i+1,j).setValue(fitnessParticipants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Pool')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<poolTimes.length+2; j++){
+        newSheet.getRange(i,j).setValue(poolTimes[j-2]);
+        newSheet.getRange(i+1,j).setValue(poolParticipants[j-2]);
+      }    
+    }
+
+    else if (cellData.includes('Games Room')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<gamesTimes.length+2; j++){
+        newSheet.getRange(i,j).setValue(gamesTimes[j-2]);
+        newSheet.getRange(i+1,j).setValue(gamesParticipants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Basketball Goal 1')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<basketball1Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(basketball1Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(basketball1Participants[j-2]);
+      }
+    }
+
+   else if (cellData.includes('Basketball Goal 2')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<basketball2Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(basketball2Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(basketball2Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Basketball Goal 3')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<basketball3Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(basketball3Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(basketball3Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Basketball Goal 4')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<basketball4Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(basketball4Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(basketball4Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Pickleball Court 1')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<pickleball1Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(pickleball1Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(pickleball1Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Pickleball Court 2')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<pickleball2Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(pickleball2Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(pickleball2Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Pickleball Court 3')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<pickleball3Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(pickleball3Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(pickleball3Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Badminton Court 1')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<badminton1Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(badminton1Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(badminton1Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Badminton Court 2')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<badminton2Times.length+2; j++){
+        newSheet.getRange(i,j).setValue(badminton2Times[j-2]);
+        newSheet.getRange(i+1,j).setValue(badminton2Participants[j-2]);
+      }
+    }
+
+    else if (cellData.includes('Volleyball')){
+      //newSheet.getRange(i+1,1).setValue(today);
+      //newSheet.getRange(i+2,1).setValue(todayPlus1);
+      //newSheet.getRange(i+3,1).setValue(todayPlus2);
+      //newSheet.getRange(i+4,1).setValue(todayPlus3);
+      for (j=2; j<volleyballTimes.length+2; j++){
+        newSheet.getRange(i,j).setValue(volleyballTimes[j-2]);
+        newSheet.getRange(i+1,j).setValue(volleyballParticipants[j-2]);
+      }
+    }
+
+
+  }
+
+
+
+
+
+  //var finalSheet = ss.insertSheet('Copy Paste Here',0);
+  //ss.setActiveSheet(ss.getSheets()[1]);
+
+}
