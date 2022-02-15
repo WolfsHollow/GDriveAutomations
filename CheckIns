@@ -1,0 +1,62 @@
+function onEdit(evt) {  
+  var range = evt.range;
+  var listValues = [];
+  var cellValue = evt.value;
+  activeSheet.getRange(2,9).setValue(cellValue);
+  var lastRow = activeSheet.getLastRow();
+
+  if (range.getColumn()==1){
+    if (!(cellValue.length == 5 || cellValue.length == 9)){
+      var listValues = cutString(cellValue);
+      //activeSheet.getRange(2,3).setValue('longer than 5/9');
+    }
+
+    else {
+      listValues.push(cellValue);
+      //activeSheet.getRange(3,3).setValue('5 or 9 in length');
+      activeSheet.getRange(3,5).setValue(listValues[0])
+    }
+    copyCell(listValues, lastRow);
+  } 
+    
+}
+
+
+function copyCell(listValues, lastRow){
+  for (i = 0; i < listValues.length; i++){
+    activeSheet.getRange(lastRow,5).setValue(listValues[i]);
+    lastRow = lastRow+1;
+  }
+  //activeSheet.getRange(lastRow,5).setValue('done');  
+}
+
+function cutString(cellValue){
+  var listValues = [];
+  while (cellValue != '' && cellValue != null){  
+    Logger.log(cellValue);
+    if (cellValue.charAt(0) == 'P'){
+      var entry = cellValue.slice(0,9);
+      var cellValue = cellValue.slice(9);
+      listValues.push(entry);
+      Logger.log('at p '+ cellValue);
+      Logger.log(cellValue);
+      Logger.log(listValues);
+    }
+    else{
+      var entry = cellValue.slice(0,5);
+      var cellValue = cellValue.slice(5);
+      listValues.push(entry);
+      Logger.log('no p '+ cellValue);
+      Logger.log(listValues)
+      Logger.log(cellValue);
+    }
+  }
+  return listValues;
+}
+
+var app = SpreadsheetApp;  
+var ss = app.getActiveSpreadsheet();
+var activeSheet = ss.getActiveSheet();
+
+
+
