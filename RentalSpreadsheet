@@ -1,0 +1,450 @@
+//Main
+// Declare variables
+let app = SpreadsheetApp; 
+let ss = app.getActiveSpreadsheet(); 
+let responseSheet = ss.getSheetByName('Rental Payment Responses');
+let rentalTempSheet = ss.getSheetByName('Rentals-Template');
+let rentalSheet = ss.getSheetByName('Rentals');
+let hiddenSheet = ss.getSheetByName('Hidden Values');
+let lastRow = responseSheet.getLastRow();
+let lastTimeStamp = String(hiddenSheet.getRange(`R1C2`).getValue());
+let newTimeStamp = String(responseSheet.getRange(`R${lastRow}C1`).getValue());
+let lastColumn = responseSheet.getLastColumn();
+const [today, nextWeek, nextMonth, nextYear, janNextYear] = establishDate();
+
+const todayValue = today.valueOf();
+const nextWeekValue = nextWeek.valueOf();
+const nextMonthValue = nextMonth.valueOf();
+const nextYearValue = nextYear.valueOf();
+const janNextYearValue = janNextYear.valueOf();
+
+let sortedSheet = ss.getSheetByName('DupedSheet');
+
+if (sortedSheet){
+  ss.deleteSheet(sortedSheet);
+}
+duplicateSheet(responseSheet, 'DupedSheet');
+sortedSheet = ss.getSheetByName('DupedSheet');
+
+let todayRow = 2;
+let weekRow = 4;
+let monthRow = 6;
+let yearRow = 8;
+let nextYearRow = 10;
+let priorRow = 12;
+
+// Set variables for data ranges
+let todayEndRow = 3;
+let weekEndRow = 5;
+let monthEndRow = 7;
+let yearEndRow = 9;
+let nextYearEndRow = 11;
+let priorEndRow = 13;
+
+
+function onOpen() {
+  let ui = SpreadsheetApp.getUi();
+  ui.createMenu('Rentals')
+      .addItem('Refresh Rentals', 'main')
+      .addToUi();
+}
+
+function autoFillGoogleDocFromForm(e) {
+  //e.values is an array of form values
+  
+  const timestamp = e.values[0];
+  const name = e.values[1];
+  const date = e.values[2];
+  const room = e.values[3];
+  const time = e.values[4];
+  const rental = e.values[5];
+  const address = e.values[6];
+  const cityZip = e.values[7];
+  const phoneNumber = e.values[8];
+  
+  /*
+  const timestamp = 'test';
+  const name = 'testing test';
+  const date = '10/2/2022';
+  const room = 'Egret';
+  const time = '5 PM - 6 PM';
+  const rental = '1231';
+  const address = '123 testing dr';
+  const cityZip = 'lewisville 60660';
+  const phoneNumber = '555555555';
+  */
+  
+  //file is the template file, and you get it by ID
+  const file = DriveApp.getFileById('1nCmKRvJm-LvGPmRD72AYyny_EFTAgR0OlTPo3w0B660'); 
+  
+  //We can make a copy of the template, name it, and optionally tell it what folder to live in
+  //file.makeCopy will return a Google Drive file object
+  const folder = DriveApp.getFolderById('1QlGoCKFkPeTYz9BCN_6-pCMOfXGxrEkI')
+  const copy = file.makeCopy(name + ' Rental', folder); 
+  
+  //Once we've got the new file created, we need to open it as a document by using its ID
+  const doc = DocumentApp.openById(copy.getId()); 
+  
+  //Since everything we need to change is in the body, we need to get that
+  let body = doc.getBody(); 
+  
+  //Then we call all of our replaceText methods
+  body.replaceText('{{Name}}', name); 
+  body.replaceText('{{Rental Number}}', rental);
+  body.replaceText('{{Phone Number}}', phoneNumber);  
+  body.replaceText('{{Address}}', address); 
+  body.replaceText('{{City Zip}}', cityZip); 
+  body.replaceText('{{Room}}', room); 
+  body.replaceText('{{Date}}', date); 
+  body.replaceText('{{Time}}', time); 
+  
+  //Lastly we save and close the document to persist our changes
+  doc.saveAndClose(); 
+}
+
+function pageUpdateAlert() {
+  SpreadsheetApp.getUi().alert(`Everything has been updated!`);
+}
+
+function pageUpToDateAlert() {
+  SpreadsheetApp.getUi().alert(`Everything is up to date!`);
+}
+ 
+function duplicateSheet(sheet, sheetName){
+  sheet.copyTo(ss).setName(sheetName);
+}
+
+function sortDates(sheet, range){
+  //Logger.log('dates sorting...');
+  sheet.getRange(range).sort({column: 3, ascending:false});
+}
+
+function checkDate(rowDate){
+  let alreadyPassed = false;
+  let withinWeek = false;
+  let withinMonth = false;
+  let withinYear = false;
+  let isToday = false;
+  let isNextYear = false;
+  rowDate = rowDate.valueOf();
+
+  if (rowDate > todayValue){ // after today
+    if (rowDate < nextWeekValue){ //within the week
+      //Logger.log(`${rowDate} < ${nextWeek} = True`);
+      withinWeek = true;
+      withinMonth = true;
+      withinYear = true;
+    }
+    else if (rowDate < nextMonthValue){ //within the month
+      //Logger.log(`${rowDate} < ${nextMonth} = True`);
+      withinMonth = true;
+      withinYear = true;
+    }
+    else if (rowDate < nextYearValue){ //within the year
+      //Logger.log(`${rowDate} < ${nextYear} = True`);
+
+      withinYear = true;
+    }
+    else {//next year;
+      //Logger.log(`it's next year?`);
+    }
+  }    
+  else if (rowDate < todayValue){ //already passed
+    //Logger.log(`${rowDate} < ${today} = True`);
+
+    alreadyPassed = true;      
+  }
+  else if (rowDate == todayValue){ //today
+    //Logger.log(`${rowDate} == ${today}`);
+
+    isToday = true;
+    withinWeek = true;
+    withinMonth = true;
+    withinYear = true;
+  }
+  else {
+    Logger.log(`${rowDate} does not fit anything`);
+  }
+  if (rowDate >= janNextYear){
+    isNextYear = true;
+  }
+  Logger.log(`CHECKDATE ${rowDate} + ${alreadyPassed} + ${isToday} + ${withinWeek} + ${withinMonth} + ${withinYear}`);
+  return [alreadyPassed, withinWeek, withinMonth, withinYear, isToday, isNextYear]
+}
+
+function pasteToRow(rowRange, rowDate,rowDateFull, paid){
+  let [alreadyPassed, withinWeek, withinMonth, withinYear, isToday, isNextYear] = checkDate(rowDateFull); //check dates
+
+  if (alreadyPassed){ //check if date has passed, copy to prior rentals
+    rentalSheet.insertRowAfter(priorRow);
+    copyTo(priorRow, rowRange, paid, '#B1B1B1');
+    //Logger.log(`Range is ${priorRow} and ${rowRange}`);
+  }
+
+  else if (isToday){ //check if date is today, copy to today
+    rentalSheet.insertRowAfter(todayRow);
+    weekRow = weekRow + 1;
+    //weekEndRow = weekEndRow + 2;
+    rentalSheet.insertRowAfter(weekRow);
+    monthRow = monthRow + 2;
+    //monthEndRow = monthEndRow + 3;
+    rentalSheet.insertRowAfter(monthRow);
+    yearRow = yearRow + 3;
+    //yearEndRow = yearEndRow + 4;
+    rentalSheet.insertRowAfter(yearRow);
+    nextYearRow = nextYear + 4;
+    //nextEndYear = nextYearEndRow +5;
+    priorRow = priorRow+4;
+    //priorEndRow = priorEndRow + 6;
+
+    //Logger.log(`Range is ${todayRow} and ${rowRange}`);
+
+    copyTo(todayRow, rowRange, paid, '#000000');
+    copyTo(weekRow, rowRange, paid, '#B1B1B1');
+    copyTo(monthRow, rowRange, paid, '#B1B1B1');
+    copyTo(yearRow, rowRange, paid, '#B1B1B1');
+  }
+
+  else if (withinWeek && !isToday){ // check if date is within the next 7 days, copy to within week
+    rentalSheet.insertRowAfter(weekRow);
+    monthRow = monthRow + 1;
+    //monthEndRow = monthEndRow +2;
+    rentalSheet.insertRowAfter(monthRow);
+    yearRow = yearRow + 2;
+    //yearEndRow = yearEndRow +3;
+    rentalSheet.insertRowAfter(yearRow);
+    //nextYearRow = nextYearRow + 3;
+    nextYearEndRow = nextYearEndRow +4;
+    priorRow = priorRow +3;
+    //priorEndRow = priorEndRow + 4;
+
+    //Logger.log(`Range is ${weekRow} and ${rowRange}`);
+
+    copyTo(weekRow, rowRange, paid, '#000000');
+    copyTo(monthRow, rowRange, paid, '#B1B1B1');
+    copyTo(yearRow, rowRange, paid, '#B1B1B1');
+  }
+
+  else if (!withinWeek && withinMonth){ // check if date is within the next month, copy to within month
+    rentalSheet.insertRowAfter(monthRow);
+    yearRow = yearRow + 1;
+    //yearEndRow = yearEndRow + 2;
+
+    rentalSheet.insertRowAfter(yearRow);
+    nextYearRow = nextYearRow + 2;
+    //nextYearEndRow = nextYearEndRow +3;
+    priorRow = priorRow +2;
+    //priorEndRow = priorEndRow +3;
+
+    //Logger.log(`Range is ${monthRow} and ${rowRange}`);
+
+    copyTo(monthRow, rowRange, paid, '#000000');
+    copyTo(yearRow, rowRange, paid, '#B1B1B1');
+  }
+
+  else if (!withinMonth && withinYear){ // check if date is within the next year, copy to within year
+    rentalSheet.insertRowAfter(yearRow);
+
+    nextYearRow++;
+    //nextYearEndRow = nextYearEndRow + 2;
+    priorRow++;
+    //priorEndRow = priorEndRow + 2;
+
+    //Logger.log(`Range is ${yearRow} and ${rowRange}`);
+
+    copyTo(yearRow, rowRange, paid, '#000000');
+  }
+
+  else if (!withinYear){ // check if date is not within the next year, copy to next year, should not happen
+    rentalSheet.insertRowAfter(nextYearRow);
+
+    priorRow++;
+    //priorEndRow = priorEndRow + 2;
+
+    copyTo(nextYearRow, rowRange, paid, '#000000');
+  }
+
+  else {
+    Logger.log(`it didn't pass; pastetorow`);
+    Logger.log(rowDate);
+    Logger.log(`Passed ${alreadyPassed} + Today ${isToday} + Week ${withinWeek} + Month ${withinMonth} + Year ${withinYear}`);
+  }
+
+  if (isNextYear){
+    rentalSheet.insertRowAfter(nextYearRow);
+    priorRow++;
+
+    copyTo(nextYearRow, rowRange,paid, '#000000');
+  }
+}
+
+function establishDate(){ // set dates for everything
+  const date = new Date();
+  const month = date.getMonth();
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const today = new Date(year, month, day);
+  const nextWeek = new Date(year, month, day+7);
+  const nextMonth = new Date(year, month+1, day);
+  const nextYear = new Date(year+1, month, day);
+  const janNextYear = new Date(year+1, 1, 1);
+
+  return [today, nextWeek, nextMonth, nextYear, janNextYear];
+}
+
+function copyTo(row, range, paid, color) { // copy info from duped sheet to rental sheet, set paid/not paid status
+  newRowRange = `R${row+1}C1:R${row+1}C${lastColumn}`;
+  
+  sortedSheet.getRange(range).copyTo(rentalSheet.getRange(newRowRange));
+  rentalSheet.getRange(newRowRange).setFontColor(color);
+
+  let rentalDate = rentalSheet.getRange(`R${row+1}C3`).getValue();
+  let month = rentalDate.getMonth();
+  const day = rentalDate.getDate();
+  const year = rentalDate.getFullYear();
+  let payByDate = new Date(year, month, day-30);
+
+  if (paid){
+    rentalSheet.getRange(`R${row+1}C13`).setBackground('green').setValue('Paid').setVerticalAlignment('middle').setHorizontalAlignment('center');
+  }
+  else {
+    rentalSheet.getRange(`R${row+1}C13`).setBackground('red').setValue('NOT Paid').setVerticalAlignment('middle').setHorizontalAlignment('center');
+    rentalSheet.getRange(`R${row+1}C14`).setValue(payByDate);
+  }
+  rentalSheet.getRange(newRowRange).setVerticalAlignment('middle').setHorizontalAlignment('center');
+}
+
+function findEnds(){ // finds the row number for each section
+  lastRow = rentalSheet.getLastRow();
+  for (i = 2; i <= lastRow; i++ ){
+    cell = rentalSheet.getRange(`R${i}C1`).getValue();
+    switch (cell){
+      case 'Rentals Today':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        todayRow = i;
+        break;
+      case 'Rentals This Week':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        weekRow = i;
+        todayEndRow = i-1;
+        break;
+      case 'Rentals This Month':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        monthRow = i;
+        weekEndRow = i-1;
+        break;
+      case 'Rentals This Year':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        yearRow = i;
+        monthEndRow = i-1;
+        break;
+      case 'Rentals Next Year':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        nextYearRow = i;
+        yearEndRow = i-1;
+        break;
+      case 'Past Rentals':
+        rentalSheet.getRange(`R${i}C1`).setBackground('#6CB898');
+        priorRow = i;
+        nextYearEndRow = i-1;
+        priorEndRow = lastRow;
+        break;
+    }
+  }
+}
+
+function color(){ // sets rules, borders, and colors
+  lastColumn = lastColumn+2;
+  let colorPriorRange = rentalSheet.getRange(`R${priorRow}C1:R${priorEndRow}C${lastColumn}`);
+  let colorTodayRange = rentalSheet.getRange(`R${todayRow}C1:R${todayEndRow}C${lastColumn}`);
+  let colorWeekRange = rentalSheet.getRange(`R${weekRow}C1:R${weekEndRow}C${lastColumn}`);
+  let colorMonthRange = rentalSheet.getRange(`R${monthRow}C1:R${monthEndRow}C${lastColumn}`);
+  let colorYearRange = rentalSheet.getRange(`R${yearRow}C1:R${yearEndRow}C${lastColumn}`);
+  let colorNextYearRange = rentalSheet.getRange(`R${nextYearRow}C1:R${nextYearEndRow}C${lastColumn}`);
+  //Logger.log(`function color: ${todayRow} ${todayEndRow},${weekRow} ${weekEndRow}, ${monthRow} ${monthEndRow}, ${yearRow} ${yearEndRow}, ${nextYearRow} ${nextYearEndRow}, ${priorRow} ${priorEndRow}`);
+
+  colorPriorRange.setBorder(true, true, true, true, true, true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+  colorTodayRange.setBorder(true,true,true,true,true,true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+  colorWeekRange.setBorder(true,true,true,true,true,true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+  colorMonthRange.setBorder(true,true,true,true,true,true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+  colorYearRange.setBorder(true,true,true,true,true,true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+  colorNextYearRange.setBorder(true,true,true,true,true,true, 'black', SpreadsheetApp.BorderStyle.SOLID);
+
+  colorPriorRange.setBorder(true, true, true, true, null, null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  colorTodayRange.setBorder(true,true,true,true,null,null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  colorWeekRange.setBorder(true,true,true,true,null,null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  colorMonthRange.setBorder(true,true,true,true,null,null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  colorYearRange.setBorder(true,true,true,true,null,null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  colorNextYearRange.setBorder(true,true,true,true,null,null, '#6CB898', SpreadsheetApp.BorderStyle.SOLID_THICK);
+  /*
+  let rule = app.newConditionalFormatRule()
+    .whenCellNotEmpty()
+    .setBackground("#FFFFFF")
+    .setRanges([colorPriorRange, colorTodayRange, colorWeekRange,colorMonthRange, colorYearRange, colorNextYearRange])
+    .build();
+  let rules = rentalSheet.getConditionalFormatRules();
+  rules.push(rule);
+  rentalSheet.setConditionalFormatRules(rules);
+  */
+}
+
+function main(){
+  if (lastTimeStamp != newTimeStamp){ 
+    rentalSheetSetup();
+  }
+  else {
+    ui = SpreadsheetApp.getUi();
+    let response = ui.alert('The spreadsheet is up to date', 'The "Rentals" tab will be deleted. Want to refresh anyway?', ui.ButtonSet.YES_NO);
+    if (response == ui.Button.YES) {
+      rentalSheetSetup();
+    } 
+  }
+
+}
+
+function rentalSheetSetup(){
+  hiddenSheet.getRange(`R1C2`).setValue(newTimeStamp);    
+  
+  if (rentalSheet){
+    ss.deleteSheet(rentalSheet);
+  }
+  duplicateSheet(rentalTempSheet, 'Rentals');
+  rentalSheet = ss.getSheetByName('Rentals');
+  sortDates(sortedSheet, `R2C1:R${lastRow}C${lastColumn}`);
+
+  ss.setActiveSheet(rentalSheet);
+  ss.moveActiveSheet(1);
+
+  // Initialize variables, dates
+  let rowRange = '';
+
+  for (i = 2; i <= lastRow; i++ ){
+    //get row to copy
+    
+    rowRange = `R${i}C1:R${i}C${lastColumn}`;
+    rangeToCopy = sortedSheet.getRange(rowRange);
+
+    let rowDate = sortedSheet.getRange(`R${i}C3`).getValue();
+    rowDay = rowDate.getDate();
+    rowMonth = rowDate.getMonth();
+    rowYear = rowDate.getFullYear();
+    Logger.log (`${rowMonth} ${rowDay} ${rowYear}`);
+    let rowDateFull = new Date(rowYear, rowMonth, rowDay);
+    let amountTotal = sortedSheet.getRange(`R${i}C10`).getValue();
+    let amountPaid = sortedSheet.getRange(`R${i}C11`).getValue();
+    let remainingTotal = amountTotal - amountPaid;
+    let paid = false;
+    if (remainingTotal === 0){
+      paid = true;
+    }    
+    
+    //Check date() and paste to row
+    Logger.log(`Name is ${sortedSheet.getRange(`R${i}C2`).getValue()}`);
+    pasteToRow(rowRange, rowDate, rowDateFull, paid);
+    
+  }
+  findEnds();
+  color();
+  ss.deleteSheet(sortedSheet);
+  pageUpdateAlert(); 
+}
