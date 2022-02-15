@@ -1,0 +1,112 @@
+function onOpenTrigger() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Make a Printout')
+      .addItem('Make a Printout', 'classRegistration')
+      .addToUi();
+
+  deleteAllSheets();
+}
+
+const APP = SpreadsheetApp;
+let ss = APP.getActiveSpreadsheet();
+let ACTIVE_SHEET = ss.getActiveSheet();
+const TEMPLATE_SHEET = ss.getSheetByName('Template');
+const LAST_ROW = ACTIVE_SHEET.getLastRow();
+const LAST_COLUMN = 3;
+
+function deleteAllSheets(){
+  TEMPLATE_SHEET.showSheet();
+  let sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  for (let i = 0; i<sheets.length; i++){
+    if (sheets[i].getSheetName() == 'Template'){
+    }  
+    else {      
+      ss.deleteSheet(sheets[i]);
+    }
+  }
+  let newSheet = ss.insertSheet();
+  ACTIVE_SHEET = newSheet;
+  ACTIVE_SHEET.setName('Ready');
+  TEMPLATE_SHEET.hideSheet();
+}
+
+
+function classRegistration(){
+  TEMPLATE_SHEET.showSheet();
+  duplicateSheet(TEMPLATE_SHEET, 'SheetToPrint');
+  var SHEET_TO_PRINT = ss.getSheetByName('SheetToPrint');
+  TEMPLATE_SHEET.hideSheet();
+  
+  let classInfo = ACTIVE_SHEET.getRange(2,1).getValue();
+  let classStaff = ACTIVE_SHEET.getRange(3,1).getValue();
+  let classLabels = retrieveLabels(classInfo, classStaff);
+  let generatedTime = ACTIVE_SHEET.getRange(7,1).getValue()
+  
+  ss.setActiveSheet(SHEET_TO_PRINT);
+  copyTable(SHEET_TO_PRINT);
+  formatSheet(SHEET_TO_PRINT);
+  addEmptyRows(SHEET_TO_PRINT);
+
+  SHEET_TO_PRINT.getRange('R1C1').setValue(classLabels[0]); //name
+  SHEET_TO_PRINT.getRange('R2C1').setValue(classLabels[1]); //instructor
+  SHEET_TO_PRINT.getRange('R3C1').setValue(classLabels[2]); //time
+  SHEET_TO_PRINT.getRange('R4C1').setValue(generatedTime); //generatedTime
+
+  console.log(classLabels);  
+}
+
+function duplicateSheet(sheet, sheetName){
+  sheet.copyTo(ss).setName(sheetName);
+}
+
+function retrieveLabels(classInfo, classStaff){
+  let classInfoArray = classInfo.split('-');
+  let classInstructorArray = classStaff.split(':');
+
+  console.log(classInfoArray);
+  let className, classTime;
+
+  if (classInfoArray[0] == 'Thrive Aquatic Group X '){
+    className = classInfoArray[2].trim();
+    classTime = classInfoArray[5];
+    console.log('this is aquatics');
+  }
+  else{
+    className = classInfoArray[2].trim();
+    classTime = classInfoArray[4].trim();
+    console.log('this is not aquatics');
+  }
+
+  let classInstructor = classInstructorArray[1].trim();  
+
+  console.log(`${className}, ${classInstructor}, ${classTime}`);
+
+  return [className, classInstructor, classTime];
+}
+
+function copyTable(sheet){
+  copyRange = ACTIVE_SHEET.getRange(`R9C1:R${LAST_ROW}C3`);
+  copyRange.copyTo(sheet.getRange('R6C1'));  
+}
+
+function formatSheet(sheet){
+  let lastRow = sheet.getLastRow();
+  let dataRange = sheet.getRange(`R6C1:R${lastRow}C3`);
+  dataRange.setFontSize('20');
+  dataRange = sheet.getRange(`R7C1:R${lastRow}C3`);
+  dataRange.sort({column: 2, ascending: true});
+}
+
+function addEmptyRows(sheet){
+  let lastRow = sheet.getLastRow()+1; // added one to this for next row
+  let attendanceNumber = lastRow - 8;
+  if (attendanceNumber < 0){
+    attendanceNumber = 0;
+  }
+  let leftOverSpots = 18-attendanceNumber;
+  let trueLastRow = leftOverSpots + lastRow;
+
+
+  let rowRange = sheet.getRange(`R${lastRow}C1:R${trueLastRow}C3`);
+  rowRange.setBorder(true, true, true, true, true, true);
+}
